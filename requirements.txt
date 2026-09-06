@@ -1,0 +1,10 @@
+# Dépendances du runtime Vercel (Python 3.12) — rien de superflu.
+# Versions validées le 31/08/2026 : google-genai 2.20, pinecone 9.1.
+google-genai>=2.0,<3        # SDK officiel Gemini
+pinecone>=9.0,<10           # index vectoriel + embedding et reranking intégrés
+python-dotenv>=1.0.1        # lecture d'un .env en local (sans effet sur Vercel)
+PyNaCl>=1.5.0               # vérification des signatures Ed25519 de Discord
+pypdf>=5.0.0                # extraction du texte des PDF
+sympy>=1.13                 # calcul formel réel (vérifications, équations)
+matplotlib>=3.9             # tracé des courbes envoyées sur Discord
+Pillow>=10.4                # traitement d'image (dépendance de matplotlib)

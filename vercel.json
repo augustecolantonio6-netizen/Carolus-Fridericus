@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "regions": ["iad1"],
+  "rewrites": [
+    { "source": "/api", "destination": "/api/index" }
+  ],
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 15,
+      "includeFiles": "utils/**"
+    },
+    "api/task.py": {
+      "maxDuration": 60,
+      "includeFiles": "utils/**"
+    },
+    "api/setup.py": {
+      "maxDuration": 60,
+      "includeFiles": "**"
+    }
+  }
+}

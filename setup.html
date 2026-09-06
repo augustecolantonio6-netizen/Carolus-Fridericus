@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Friedrich — Installation</title>
+<style>
+  :root{
+    --fond:#0f1117; --carte:#171a23; --bord:#262b38; --texte:#e7e9ee;
+    --doux:#9aa3b5; --accent:#7aa2f7; --ok:#4ade80; --ko:#f87171; --attente:#fbbf24;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --fond:#f5f6fa; --carte:#ffffff; --bord:#e2e5ee; --texte:#1a1d26;
+           --doux:#5b6478; --accent:#2f5fd0; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--texte);
+       font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:32px 16px}
+  .page{max-width:760px;margin:0 auto}
+  h1{font-size:28px;margin:0 0 4px;letter-spacing:-.02em}
+  h1 span{font-size:32px}
+  .sous{color:var(--doux);margin:0 0 28px}
+  .carte{background:var(--carte);border:1px solid var(--bord);border-radius:14px;
+         padding:22px;margin-bottom:18px}
+  label{display:block;font-weight:600;margin-bottom:6px;font-size:14px}
+  .aide{color:var(--doux);font-size:13px;margin:6px 0 0}
+  input[type=password],input[type=text]{
+    width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--bord);
+    background:var(--fond);color:var(--texte);font-size:15px;font-family:inherit}
+  input:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .boutons{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  button{padding:12px 18px;border-radius:10px;border:1px solid var(--bord);
+         background:var(--carte);color:var(--texte);font-size:14px;font-weight:600;
+         cursor:pointer;font-family:inherit}
+  button:hover:not(:disabled){border-color:var(--accent)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  button.principal{background:var(--accent);border-color:var(--accent);color:#0b1020}
+  .barre{height:8px;background:var(--bord);border-radius:99px;overflow:hidden;
+         margin:18px 0 6px;display:none}
+  .barre.visible{display:block}
+  .barre i{display:block;height:100%;width:0;background:var(--accent);
+           transition:width .3s ease}
+  .journal{background:var(--fond);border:1px solid var(--bord);border-radius:10px;
+           padding:14px;font:13px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;
+           white-space:pre-wrap;word-break:break-word;max-height:420px;overflow:auto;
+           margin-top:16px;display:none}
+  .journal.visible{display:block}
+  .ok{color:var(--ok)} .ko{color:var(--ko)} .attente{color:var(--attente)}
+  .doux{color:var(--doux)}
+  .etapes{margin:0;padding-left:20px;color:var(--doux);font-size:14px}
+  .etapes li{margin:4px 0}
+  code{background:var(--fond);border:1px solid var(--bord);border-radius:6px;
+       padding:2px 6px;font-size:13px}
+  .url{display:flex;gap:8px;align-items:center;margin-top:10px}
+  .url input{font-family:ui-monospace,Consolas,monospace;font-size:13px}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1><span>👨‍🏫</span> Friedrich</h1>
+  <p class="sous">Installation du professeur de mathématiques — tout se fait depuis cette page.</p>
+
+  <div class="carte">
+    <label for="secret">Secret d'installation</label>
+    <input id="secret" type="password" autocomplete="off" spellcheck="false"
+           placeholder="la valeur de SETUP_SECRET">
+    <p class="aide">C'est la variable <code>SETUP_SECRET</code> que tu as ajoutée dans
+      Vercel → Settings → Environment Variables.</p>
+
+    <div class="boutons">
+      <button id="btn-init" class="principal">🚀 Initialiser Friedrich</button>
+      <button id="btn-etat">🔍 Vérifier l'état</button>
+      <button id="btn-test">🧪 Tester Discord + Pinecone + Gemini</button>
+      <button id="btn-force">♻️ Réingérer le programme</button>
+    </div>
+
+    <div class="barre" id="barre"><i id="progres"></i></div>
+    <div class="journal" id="journal"></div>
+  </div>
+
+  <div class="carte">
+    <strong>Ce que fait « Initialiser Friedrich »</strong>
+    <ol class="etapes">
+      <li>vérifie que toutes les variables d'environnement sont présentes ;</li>
+      <li>enregistre les commandes <code>/help /hint /detail /solve /correct</code> ;</li>
+      <li>crée l'index Pinecone puis y envoie le programme de Terminale (par tranches, sans jamais dépasser la durée d'une fonction) ;</li>
+      <li>teste Discord, Pinecone et Gemini de bout en bout.</li>
+    </ol>
+    <p class="aide">L'ingestion est idempotente : relancer cette page ne crée aucun doublon.</p>
+
+    <div id="bloc-invite" style="display:none">
+      <label style="margin-top:18px">⚠️ À faire <em>avant</em> l'initialisation : inviter Friedrich</label>
+      <p class="aide" style="margin-bottom:8px">Sans invitation, Discord refuse
+        d'enregistrer les commandes sur ton serveur (<code>403 Missing Access</code>).
+        Le Guild ID ne l'invite pas : il dit seulement <em>où</em> enregistrer les commandes.</p>
+      <div class="url">
+        <input id="invitation" type="text" readonly>
+        <button id="btn-inviter">Ouvrir</button>
+      </div>
+    </div>
+
+    <div id="bloc-url" style="display:none">
+      <label style="margin-top:18px">Interactions Endpoint URL (à coller dans le Discord Developer Portal)</label>
+      <div class="url">
+        <input id="endpoint" type="text" readonly>
+        <button id="btn-copier">Copier</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const $ = (id) => document.getElementById(id);
+  const journal = $("journal"), barre = $("barre"), progres = $("progres");
+  const boutons = ["btn-init", "btn-etat", "btn-test", "btn-force"].map($);
+
+  function ecrire(texte, classe) {
+    journal.classList.add("visible");
+    const ligne = document.createElement("div");
+    if (classe) ligne.className = classe;
+    ligne.textContent = texte;
+    journal.appendChild(ligne);
+    journal.scrollTop = journal.scrollHeight;
+  }
+  const vider = () => { journal.textContent = ""; journal.classList.remove("visible"); };
+  const bloquer = (etat) => boutons.forEach(b => b.disabled = etat);
+  function avancement(fait, total) {
+    barre.classList.add("visible");
+    progres.style.width = Math.max(2, Math.round(100 * fait / Math.max(1, total))) + "%";
+  }
+
+  async function appel(action, extra) {
+    const secret = $("secret").value.trim();
+    if (!secret) throw new Error("Entre d'abord le secret d'installation.");
+    const reponse = await fetch("/api/setup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Setup-Secret": secret },
+      body: JSON.stringify(Object.assign({ action: action }, extra || {}))
+    });
+    let donnees;
+    try { donnees = await reponse.json(); }
+    catch (e) { throw new Error("Réponse illisible du serveur (HTTP " + reponse.status + ")."); }
+    if (!reponse.ok) throw new Error(donnees.erreur || ("HTTP " + reponse.status));
+    return donnees;
+  }
+
+  const attendre = (ms) => new Promise(r => setTimeout(r, ms));
+
+  function afficherEndpoint() {
+    $("endpoint").value = location.origin + "/api";
+    $("bloc-url").style.display = "block";
+  }
+
+  function afficherInvitation(lien) {
+    if (!lien) return;
+    $("invitation").value = lien;
+    $("bloc-invite").style.display = "block";
+  }
+
+  async function etatConfiguration() {
+    const etat = await appel("status");
+    afficherInvitation(etat.lien_invitation);
+    const manquantes = (etat.configuration && etat.configuration.manquantes) || [];
+    if (manquantes.length) {
+      ecrire("❌ Variables manquantes dans Vercel : " + manquantes.join(", "), "ko");
+      ecrire("   Ajoute-les (Settings → Environment Variables), redéploie, puis reviens ici.", "doux");
+      return false;
+    }
+    ecrire("✅ Toutes les variables requises sont présentes.", "ok");
+    if (etat.discord && etat.discord.nom) ecrire("   Bot Discord : " + etat.discord.nom, "doux");
+    if (etat.corpus && etat.corpus.total) {
+      ecrire("   Corpus embarqué : " + etat.corpus.total + " extraits ("
+             + Object.keys(etat.corpus.sources || {}).length + " documents)", "doux");
+    }
+    return true;
+  }
+
+  async function ingerer(force) {
+    let offset = 0, total = 0, tours = 0, premier = true;
+    ecrire("📚 Ingestion du programme dans Pinecone…");
+    ecrire("   Le plan gratuit Pinecone plafonne à 250 000 tokens/minute : "
+           + "l'envoi est volontairement étalé. Compte ~12 minutes, "
+           + "et laisse cet onglet ouvert.", "doux");
+    for (;;) {
+      const r = await appel("ingest", { offset: offset, force: force && premier });
+      premier = false;
+      if (r.erreur) { ecrire("❌ " + r.erreur, "ko"); return false; }
+
+      if (r.attente_index) {
+        ecrire("   ⏳ Création de l'index Pinecone…", "attente");
+        await attendre((r.attente_s || 5) * 1000);
+        continue;
+      }
+      if (r.deja_ingere) { ecrire("✅ " + r.message, "ok"); avancement(1, 1); return true; }
+
+      total = r.total || total;
+      if (r.reprise) ecrire("   ↩️ Reprise à l'extrait " + r.offset + ".", "doux");
+      offset = r.offset || 0;
+      avancement(offset, total);
+
+      if (r.termine) {
+        ecrire("   " + offset + " / " + total + " extraits indexés", "doux");
+        ecrire("✅ " + (r.message || "Ingestion terminée."), "ok");
+        if (r.statistiques && r.statistiques.vecteurs_namespace) {
+          ecrire("   Pinecone contient " + r.statistiques.vecteurs_namespace
+                 + " vecteurs dans « " + r.statistiques.namespace + " ».", "doux");
+        }
+        return true;
+      }
+
+      const pause = r.attente_s || 25;
+      if (r.limite_debit) {
+        ecrire("   ⏸️ " + (r.message || "Quota d'embedding atteint.")
+               + "  (" + offset + " / " + total + ")", "attente");
+      } else {
+        const restant = Math.max(0, total - offset);
+        const tours_restants = Math.max(1, Math.ceil(restant / Math.max(1, r.envoyes_ce_tour || 1)));
+        const minutes = Math.ceil(tours_restants * (pause + (r.duree_s || 25)) / 60);
+        ecrire("   " + offset + " / " + total + " extraits"
+               + "  ·  encore ~" + minutes + " min"
+               + "  ·  pause de " + pause + " s", "doux");
+      }
+      await attendre(pause * 1000);
+
+      if (++tours > 400) { ecrire("❌ Ingestion anormalement longue, arrêt.", "ko"); return false; }
+    }
+  }
+
+  async function tester() {
+    ecrire("🧪 Test de bout en bout…");
+    const r = await appel("verifier");
+
+    const ch = r.chaine_interne || {};
+    ecrire((ch.ok ? "✅" : "❌") + " Chaîne interne /api → /api/task : "
+           + (ch.ok ? "opérationnelle (" + (ch.duree_s || "?") + "s)" : ch.erreur),
+           ch.ok ? "ok" : "ko");
+    if (!ch.ok) {
+      ecrire("   Sans ce maillon, Friedrich resterait bloqué sur « ⏳ » "
+             + "sans jamais répondre.", "doux");
+    }
+
+    ecrire((r.discord && r.discord.ok ? "✅" : "❌") + " Discord : "
+           + (r.discord && r.discord.ok ? r.discord.bot.nom : (r.discord || {}).erreur),
+           r.discord && r.discord.ok ? "ok" : "ko");
+    ecrire((r.pinecone && r.pinecone.ok ? "✅" : "❌") + " Pinecone : "
+           + (r.pinecone && r.pinecone.ok
+              ? r.pinecone.extraits_trouves + " extraits retrouvés (ex. " + r.pinecone.exemple_source + ")"
+              : (r.pinecone || {}).erreur),
+           r.pinecone && r.pinecone.ok ? "ok" : "ko");
+    const g = r.gemini || {};
+    ecrire((g.ok ? "✅" : "❌") + " Gemini : "
+           + (g.ok ? g.modele + " (clé n°" + g.cle_utilisee + ")" : g.erreur),
+           g.ok ? "ok" : "ko");
+    if (g.conseil) ecrire("   ⚠️ " + g.conseil, "attente");
+    if (g.detail_technique) ecrire("   " + g.detail_technique, "doux");
+    if (g.modeles_disponibles && g.modeles_disponibles.length) {
+      ecrire("   Modèles disponibles pour ta clé :", "doux");
+      ecrire("   " + g.modeles_disponibles.join("  ·  "), "doux");
+      ecrire("   Mets-en un dans GEMINI_MODEL (Vercel), puis redéploie.", "doux");
+    }
+    return !!r.ok;
+  }
+
+  async function executer(nom, travail) {
+    vider(); bloquer(true);
+    try { await travail(); }
+    catch (e) { ecrire("❌ " + (e.message || e), "ko"); }
+    finally { bloquer(false); }
+  }
+
+  $("btn-init").onclick = () => executer("init", async () => {
+    ecrire("── Installation de Friedrich ──", "doux");
+    if (!(await etatConfiguration())) return;
+
+    ecrire("⚙️  Enregistrement des commandes Discord…");
+    ecrire("   (Friedrich doit déjà être invité sur ton serveur — lien plus bas)", "doux");
+    const c = await appel("commands");
+    ecrire("✅ " + c.nombre + " commandes enregistrées — " + c.portee, "ok");
+    ecrire("   " + (c.commandes || []).map(n => "/" + n).join("  "), "doux");
+
+    if (!(await ingerer(false))) return;
+    const ok = await tester();
+    ecrire("");
+    if (ok) {
+      ecrire("🎉 Friedrich est prêt !", "ok");
+      ecrire("Dernière étape : colle l'URL ci-dessous dans le Discord Developer Portal "
+             + "→ General Information → Interactions Endpoint URL, puis Save.", "doux");
+    } else {
+      ecrire("⚠️ Installation terminée, mais un test a échoué (voir ci-dessus).", "attente");
+    }
+    afficherEndpoint();
+  });
+
+  $("btn-etat").onclick = () => executer("etat", async () => {
+    ecrire("── État de Friedrich ──", "doux");
+    await etatConfiguration();
+    const etat = await appel("status");
+    if (etat.pinecone) {
+      const p = etat.pinecone;
+      ecrire((p.index_existe ? "✅" : "❌") + " Index Pinecone : "
+             + (p.index_existe ? "présent" : "absent"), p.index_existe ? "ok" : "ko");
+      if (p.statistiques && p.statistiques.vecteurs_namespace)
+        ecrire("   " + p.statistiques.vecteurs_namespace + " vecteurs indexés", "doux");
+      if (p.manifeste) ecrire("   Corpus ingéré : empreinte " + p.manifeste.fingerprint, "doux");
+      else if (p.index_existe) ecrire("   ⚠️ Programme pas encore ingéré.", "attente");
+    }
+    afficherEndpoint();
+  });
+
+  $("btn-test").onclick = () => executer("test", tester);
+
+  $("btn-force").onclick = () => executer("force", async () => {
+    ecrire("── Réingestion complète (force) ──", "doux");
+    await ingerer(true);
+  });
+
+  $("btn-inviter").onclick = () => {
+    const lien = $("invitation").value;
+    if (lien) window.open(lien, "_blank", "noopener");
+  };
+
+  $("btn-copier").onclick = async () => {
+    try {
+      await navigator.clipboard.writeText($("endpoint").value);
+      $("btn-copier").textContent = "Copié ✓";
+      setTimeout(() => { $("btn-copier").textContent = "Copier"; }, 1800);
+    } catch (e) {
+      $("endpoint").select();
+    }
+  };
+
+  $("secret").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") $("btn-init").click();
+  });
+})();
+</script>
+</body>
+</html>

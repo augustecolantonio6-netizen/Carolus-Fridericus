@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Friedrich — professeur de maths</title>
+<style>
+  :root{--fond:#0f1117;--carte:#171a23;--bord:#262b38;--texte:#e7e9ee;
+        --doux:#9aa3b5;--accent:#7aa2f7;--ok:#4ade80;--ko:#f87171}
+  @media (prefers-color-scheme: light){
+    :root{--fond:#f5f6fa;--carte:#fff;--bord:#e2e5ee;--texte:#1a1d26;--doux:#5b6478;--accent:#2f5fd0}
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--texte);min-height:100vh;
+       display:flex;align-items:center;justify-content:center;padding:24px;
+       font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .carte{background:var(--carte);border:1px solid var(--bord);border-radius:16px;
+         padding:32px;max-width:520px;width:100%}
+  h1{margin:0 0 6px;font-size:26px;letter-spacing:-.02em}
+  p{color:var(--doux);margin:0 0 20px}
+  .ligne{display:flex;justify-content:space-between;gap:12px;padding:9px 0;
+         border-top:1px solid var(--bord);font-size:14px}
+  .ok{color:var(--ok)} .ko{color:var(--ko)}
+  code{background:var(--fond);border:1px solid var(--bord);border-radius:6px;
+       padding:2px 6px;font-size:13px}
+  a.bouton{display:inline-block;margin-top:22px;padding:12px 18px;border-radius:10px;
+           background:var(--accent);color:#0b1020;text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<div class="carte">
+  <h1>👨‍🏫 Friedrich</h1>
+  <p>Professeur de mathématiques de Terminale, sur Discord.</p>
+
+  <div id="etat"><div class="ligne"><span>État du serveur</span><span class="doux">…</span></div></div>
+
+  <div class="ligne">
+    <span>Interactions Endpoint URL</span>
+    <code id="endpoint">/api</code>
+  </div>
+
+  <a class="bouton" href="/setup.html">Ouvrir la page d'installation →</a>
+</div>
+
+<script>
+fetch("/api").then(r => r.json()).then(d => {
+  document.getElementById("endpoint").textContent = location.origin + "/api";
+  const zone = document.getElementById("etat");
+  zone.innerHTML = "";
+  const ligne = (nom, ok) => {
+    const el = document.createElement("div");
+    el.className = "ligne";
+    el.innerHTML = "<span>" + nom + "</span><span class='" + (ok ? "ok" : "ko") + "'>"
+                 + (ok ? "✓ configuré" : "✗ manquant") + "</span>";
+    zone.appendChild(el);
+  };
+  Object.keys(d.configuration || {}).forEach(k => ligne(k, d.configuration[k]));
+}).catch(() => {
+  document.getElementById("etat").innerHTML =
+    "<div class='ligne'><span>État du serveur</span><span class='ko'>injoignable</span></div>";
+});
+</script>
+</body>
+</html>
